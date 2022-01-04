@@ -9,6 +9,7 @@ func main() {
 
 	exibeIntroducao()
 	exibeMenu()
+
 	comando := leComando()
 
 	switch comando {
