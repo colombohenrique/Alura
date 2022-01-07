@@ -4,7 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 )
+
+const monitoramentos = 3
+
+//Tempo que será esperado para a próxima verificação de sites
+const tempoDeEspera = 5 // segundos
 
 func main() {
 
@@ -54,7 +60,21 @@ func leComando() int {
 func iniciarMonitoramento() {
 	fmt.Println("Monitorando...")
 	//site := "https://www.alura.com.br"
-	site := "https://random-status-code.herokuapp.com"
+	sites := []string{"https://random-status-code.herokuapp.com", "https://ww.alura.com.br",
+		"https://caelum.com.br"}
+
+	for i := 0; i < monitoramentos; i++ {
+		for _, site := range sites {
+			testaSite(site)
+		}
+		fmt.Println("Aguarde...")
+		time.Sleep(tempoDeEspera * time.Second)
+	}
+
+	fmt.Println("")
+}
+
+func testaSite(site string) {
 	resp, _ := http.Get(site)
 
 	if resp.StatusCode == 200 {
