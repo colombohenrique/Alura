@@ -74,6 +74,7 @@ func iniciarMonitoramento() {
 	fmt.Println("")
 }
 
+//Função de verificação de sites
 func testaSite(site string) {
 	resp, _ := http.Get(site)
 
