@@ -1,9 +1,9 @@
 package main
 
 import (
-	"banco/clientes"
-	"banco/contas"
 	"fmt"
+	"github/Alura/go/src/banco/clientes"
+	"github/Alura/go/src/banco/contas"
 )
 
 func PagarBoleto(conta verificarConta, valorDoBoleto float64) {
