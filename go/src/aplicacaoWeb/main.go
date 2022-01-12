@@ -5,6 +5,8 @@ import (
 	"text/template"
 )
 
+//download postgres
+
 type Produto struct {
 	Nome, Descricao string
 	Preco           float64
