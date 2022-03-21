@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"gin-api-rest/controllers"
 	"gin-api-rest/database"
 	"gin-api-rest/models"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -45,7 +49,7 @@ func TestVerificaStatusCodeDaSaudacaoComParametro(t *testing.T) {
 	assert.Equal(t, mockResposta, string(respostaBody))
 }
 
-func TestListandoTodosAlunosHandler(t *testing.T) {
+func TestListaTodosAlunosHandler(t *testing.T) {
 	database.ConectaComBancoDeDados()
 	CriaAlunoMock()
 	defer DeletaAlunoMock()
@@ -67,5 +71,65 @@ func TestBuscaAlunoPorCPFHandler(t *testing.T) {
 	resposta := httptest.NewRecorder()
 	r.ServeHTTP(resposta, req)
 	assert.Equal(t, http.StatusOK, resposta.Code)
+}
 
+func TestBuscaAlunoPorIDHandler(t *testing.T) {
+	database.ConectaComBancoDeDados()
+	CriaAlunoMock()
+	defer DeletaAlunoMock()
+	r := SetupDasRotasDeTeste()
+	r.GET("/alunos/:id", controllers.BuscaAlunoPorID)
+
+	pathBusca := "/alunos/" + strconv.Itoa(IDMock)
+
+	req, _ := http.NewRequest("GET", pathBusca, nil)
+	resposta := httptest.NewRecorder()
+	r.ServeHTTP(resposta, req)
+
+	var alunoMock models.Aluno
+	json.Unmarshal(resposta.Body.Bytes(), &alunoMock)
+
+	fmt.Println(alunoMock.Nome)
+
+	assert.Equal(t, "Aluno Teste", alunoMock.Nome)
+	assert.Equal(t, "11111111111", alunoMock.CPF)
+	assert.Equal(t, "111111111", alunoMock.RG)
+	assert.Equal(t, http.StatusOK, resposta.Code)
+}
+
+func TestDeletaAlunoHandler(t *testing.T) {
+	database.ConectaComBancoDeDados()
+	CriaAlunoMock()
+	r := SetupDasRotasDeTeste()
+	r.DELETE("/alunos/:id", controllers.DeletaAluno)
+
+	pathBusca := "/alunos/" + strconv.Itoa(IDMock)
+
+	req, _ := http.NewRequest("DELETE", pathBusca, nil)
+	resposta := httptest.NewRecorder()
+	r.ServeHTTP(resposta, req)
+
+	assert.Equal(t, http.StatusOK, resposta.Code)
+}
+
+func TestEditaAlunoHandler(t *testing.T) {
+	database.ConectaComBancoDeDados()
+	CriaAlunoMock()
+	defer DeletaAlunoMock()
+	r := SetupDasRotasDeTeste()
+	r.PATCH("/alunos/:id", controllers.EditaAluno)
+
+	aluno := models.Aluno{Nome: "Aluno Teste", CPF: "41111111111", RG: "111111119"}
+	alunoJson, _ := json.Marshal(aluno)
+
+	pathEdicao := "/alunos/" + strconv.Itoa(IDMock)
+	req, _ := http.NewRequest("PATCH", pathEdicao, bytes.NewBuffer(alunoJson))
+	resposta := httptest.NewRecorder()
+	r.ServeHTTP(resposta, req)
+
+	var alunoMockAtualizado models.Aluno
+	json.Unmarshal(resposta.Body.Bytes(), &alunoMockAtualizado)
+	assert.Equal(t, "Aluno Teste", alunoMockAtualizado.Nome)
+	assert.Equal(t, "41111111111", alunoMockAtualizado.CPF)
+	assert.Equal(t, "111111119", alunoMockAtualizado.RG)
 }
